@@ -625,6 +625,11 @@
                     <p class="info-text">Средняя сумма заказа: <span id="average-order" class="average-value">150,00 руб.</span></p>
                 </div>
                 
+                <div class="form-group">
+                    <label for="hours-per-day">Рабочих часов в день</label>
+                    <input type="text" id="hours-per-day" inputmode="decimal" value="8" readonly>
+                </div>
+                
                 <h2 class="section-title">Расходы</h2>
                 
                 <div class="form-row">
@@ -740,6 +745,7 @@
             // Параметры работы
             const ordersPerHourInput = document.getElementById('orders-per-hour');
             const incomePerHourInput = document.getElementById('income-per-hour');
+            const hoursPerDayInput = document.getElementById('hours-per-day');
             const averageOrderElement = document.getElementById('average-order');
             
             // Расходы
@@ -780,6 +786,7 @@
                 const data = {
                     ordersPerHour: ordersPerHourInput.value,
                     incomePerHour: incomePerHourInput.value,
+                    hoursPerDay: hoursPerDayInput.value,
                     fuelPerDay: fuelPerDayInput.value,
                     fuelPrice: fuelPriceInput.value,
                     otherCosts: otherCostsInput.value,
@@ -799,6 +806,7 @@
                     
                     ordersPerHourInput.value = data.ordersPerHour || '2,5';
                     incomePerHourInput.value = data.incomePerHour || '3000';
+                    hoursPerDayInput.value = data.hoursPerDay || '8';
                     fuelPerDayInput.value = data.fuelPerDay || '5';
                     fuelPriceInput.value = data.fuelPrice || '50';
                     otherCostsInput.value = data.otherCosts || '200';
@@ -815,6 +823,7 @@
                 if (confirm('Вы уверены, что хотите сбросить все настройки к значениям по умолчанию?')) {
                     ordersPerHourInput.value = '2,5';
                     incomePerHourInput.value = '3000';
+                    hoursPerDayInput.value = '8';
                     fuelPerDayInput.value = '5';
                     fuelPriceInput.value = '50';
                     otherCostsInput.value = '200';
@@ -867,6 +876,7 @@
                 const ordersPerHour = parseNumberWithComma(ordersPerHourInput.value) || 0;
                 const selectedHours = parseFloat(hoursDropdown.value) || 0;
                 const incomePerHour = parseNumberWithComma(incomePerHourInput.value) || 0;
+                const hoursPerDay = parseNumberWithComma(hoursPerDayInput.value) || 0;
                 
                 const fuelPerDay = parseNumberWithComma(fuelPerDayInput.value) || 0;
                 const fuelPrice = parseNumberWithComma(fuelPriceInput.value) || 0;
@@ -878,11 +888,14 @@
                 // Рассчитываем среднюю сумму заказа
                 calculateAverageOrder();
                 
-                // Выполняем расчеты
-                const dailyOrders = ordersPerHour * selectedHours;
-                const dailyIncome = incomePerHour;
-                const dailyFuelCost = (fuelPerDay / 8) * selectedHours * fuelPrice; // Пропорционально отработанным часам
-                const dailyCosts = dailyFuelCost + (otherCosts / 8) * selectedHours; // Пропорционально отработанным часам
+                // Рассчитываем часовую ставку дохода
+                const hourlyIncome = incomePerHour / selectedHours;
+                
+                // Выполняем расчеты для полного рабочего дня
+                const dailyOrders = ordersPerHour * hoursPerDay;
+                const dailyIncome = hourlyIncome * hoursPerDay;
+                const dailyFuelCost = fuelPerDay * fuelPrice;
+                const dailyCosts = dailyFuelCost + otherCosts;
                 const dailyProfit = dailyIncome - dailyCosts;
                 
                 const weeklyProfit = dailyProfit * workDaysWeek;
